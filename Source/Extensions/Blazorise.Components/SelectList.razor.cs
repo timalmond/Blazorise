@@ -1,8 +1,10 @@
 ﻿#region Using directives
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Blazorise.Extensions;
 using Microsoft.AspNetCore.Components;
 #endregion
 
@@ -26,10 +28,30 @@ namespace Blazorise.Components
 
         #region Methods
 
-        protected Task HandleSelectedValueChanged( TValue value )
+        protected async Task HandleSelectedValueChanged( TValue value )
         {
             SelectedValue = value;
-            return SelectedValueChanged.InvokeAsync( value );
+
+            if ( Data is IList<TItem> data )
+            {
+                var selectedItem = data.FirstOrDefault( x => ValueField( x ).IsEqual( SelectedValue ) );
+                var selectedIndex = data.IndexOf( selectedItem );
+
+                await HandleSelectedIndexChanged( selectedIndex );
+            }
+
+            await SelectedValueChanged.InvokeAsync( value );
+        }
+
+        protected async Task HandleSelectedIndexChanged( int index )
+        {
+            if ( SelectedIndex != index )
+            {
+                SelectedIndex = index;
+
+                await SelectedIndexChanged.InvokeAsync( index );
+                await SelectedItemChanged.InvokeAsync( SelectedItem );
+            }
         }
 
         /// <summary>
@@ -80,6 +102,47 @@ namespace Blazorise.Components
         /// Gets or sets an expression that identifies the selected value.
         /// </summary>
         [Parameter] public Expression<Func<TValue>> SelectedValueExpression { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currently selected item index.
+        /// </summary>
+        [Parameter] public int SelectedIndex { get; set; } = -1;
+
+        /// <summary>
+        /// Occurs after the selected index has changed.
+        /// </summary>
+        [Parameter] public EventCallback<int> SelectedIndexChanged { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currently selected item.
+        /// </summary>
+        [Parameter]
+        public TItem SelectedItem
+        {
+            get
+            {
+                if ( Data is IList<TItem> data && SelectedIndex >= 0 )
+                {
+                    return data[SelectedIndex];
+                }
+
+                return default( TItem );
+            }
+            set
+            {
+                if ( Data is IList<TItem> data )
+                {
+                    var selectedValue = value != null && ValueField != null ? ValueField.Invoke( value ) : DefaultItemValue;
+
+                    InvokeAsync( async () => await HandleSelectedValueChanged( selectedValue ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Occurs after the selected value has changed.
+        /// </summary>
+        [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
         /// <summary>
         /// Display text of the default select item.
