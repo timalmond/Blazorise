@@ -49,16 +49,17 @@ namespace Blazorise.DataGrid
 
         /// <summary>
         /// Checks if a type is a collection.
+        /// This is a generalized method, checking for various Collection, Array, IEnumerable derivatives.
         /// </summary>
         /// <param name="type">Type to check.</param>
         /// <returns>True if <paramref name="type"/> is a collection.</returns>
         public static bool IsCollection( this Type type )
             => typeof( ICollection ).IsAssignableFrom( type )
-                || type.IsGenericCollection()
                 || type.IsGenericIEnumerable()
-                || Array.Find( type.GetInterfaces(), IsGenericCollection ) != null;
+                || Array.Exists( type.GetInterfaces(), IsGenericIEnumerable )
+                && type != typeof(string);
 
-        private static bool IsGenericCollection( this Type type )
+        private static bool IsGenericICollection( this Type type )
             => type.IsGenericType
                 && type.GetGenericTypeDefinition() == typeof( ICollection<> );
 

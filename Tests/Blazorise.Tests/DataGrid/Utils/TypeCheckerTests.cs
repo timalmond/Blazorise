@@ -18,6 +18,7 @@ namespace Blazorise.Tests.DataGrid.Utils
             Assert.True( typeof( int[] ).IsCollection() );
             Assert.True( typeof( IList ).IsCollection() );
             Assert.True( typeof( ICollection ).IsCollection() );
+            Assert.True( typeof( ICollection<string> ).IsCollection() );
             Assert.True( typeof( ArrayList ).IsCollection() );
             Assert.True( typeof( Array ).IsCollection() );
         }
@@ -31,5 +32,7 @@ namespace Blazorise.Tests.DataGrid.Utils
             Assert.False( typeof( int ).IsCollection() );
             Assert.False( typeof( int? ).IsCollection() );
         }
+
     }
+
 }
