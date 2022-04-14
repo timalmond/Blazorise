@@ -1,0 +1,7 @@
+﻿@inherits BaseComponent
+<CascadingValue Value="@this" IsFixed>
+    <div>
+        <canvas @ref="@ElementRef" id="@ElementId"></canvas>
+        <div @ref="@TextLayerElementRef" id="@TextLayerElementId" class="textLayer"></div>
+    </div>
+</CascadingValue>

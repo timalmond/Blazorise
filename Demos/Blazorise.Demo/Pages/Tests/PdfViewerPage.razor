@@ -1,0 +1,28 @@
+﻿@page "/tests/pdf-viewer";
+<Row>
+    <Column>
+        <Card Margin="Margin.Is4.OnY">
+            <CardHeader>
+                <CardTitle>PdfViewer</CardTitle>
+            </CardHeader>
+            <CardBody>
+                <CardText>
+                    Shows the basic usage of PdfViewer.
+                </CardText>
+            </CardBody>
+            <CardBody>
+                <Button Color="Color.Secondary" Clicked="@(()=>pdfViewerRef.PrevPage())">Prev</Button>
+                <Button Color="Color.Primary" Clicked="@(()=>pdfViewerRef.NextPage())">Next</Button>
+                <Button Color="Color.Secondary" Clicked="@(()=>pdfViewerRef.ZoomIn(.25))">Zoom In</Button>
+                <Button Color="Color.Primary" Clicked="@(()=>pdfViewerRef.ZoomOut(.25))">Zoom Out</Button>
+            </CardBody>
+            <CardBody>
+                <PdfViewer @ref="@pdfViewerRef" Source="https://github.com/mozilla/pdf.js/blob/master/examples/learning/helloworld.pdf" PageCountChanged="@(v=>pageCount = v)" />
+            </CardBody>
+        </Card>
+    </Column>
+</Row>
+@code {
+    PdfViewer pdfViewerRef;
+    int pageCount = 0;
+}
