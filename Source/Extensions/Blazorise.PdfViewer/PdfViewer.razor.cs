@@ -58,6 +58,8 @@ namespace Blazorise.PdfViewer
                 await JSModule.Initialize( dotNetObjectRef, ElementRef, ElementId, TextLayerElementRef, TextLayerElementId, new
                 {
                     Source,
+                    Scale,
+                    Selectable
                 } );
 
                 Initialized = true;
@@ -93,12 +95,12 @@ namespace Blazorise.PdfViewer
             await JSModule.SetSource( ElementRef, ElementId, value );
         }
 
-        public async Task PrevPage()
+        public async Task PreviousPage()
         {
             if ( !Initialized )
                 return;
 
-            await JSModule.PrevPage( ElementRef, ElementId );
+            await JSModule.PreviousPage( ElementRef, ElementId );
         }
 
         public async Task NextPage()
@@ -126,9 +128,39 @@ namespace Blazorise.PdfViewer
         }
 
         [JSInvokable]
+        public Task NotifyPage( int page )
+        {
+            return PageChanged.InvokeAsync( page );
+        }
+
+        [JSInvokable]
         public Task NotifyPageCount( int pageCount )
         {
             return PageCountChanged.InvokeAsync( pageCount );
+        }
+
+        [JSInvokable]
+        public Task NotifyHyperlinkClicked( string url )
+        {
+            return HyperlinkClicked.InvokeAsync( url );
+        }
+
+        [JSInvokable]
+        public Task NotifyDocumentLoaded( string source )
+        {
+            return DocumentLoaded.InvokeAsync( source );
+        }
+
+        [JSInvokable]
+        public Task NotifyDocumentUnloaded( string source )
+        {
+            return DocumentUnloaded.InvokeAsync( source );
+        }
+
+        [JSInvokable]
+        public Task NotifyDocumentLoadFailed( string error )
+        {
+            return DocumentLoadFailed.InvokeAsync( error );
         }
 
         #endregion
@@ -171,7 +203,27 @@ namespace Blazorise.PdfViewer
         /// </summary>
         [Parameter] public string Source { get; set; }
 
+        /// <summary>
+        /// Defines the text scaling factor.
+        /// </summary>
+        [Parameter] public double Scale { get; set; } = 1d;
+
+        /// <summary>
+        /// Defines if the content will be selectable.
+        /// </summary>
+        [Parameter] public bool Selectable { get; set; } = true;
+
+        [Parameter] public EventCallback<string> DocumentLoaded { get; set; }
+
+        [Parameter] public EventCallback<string> DocumentUnloaded { get; set; }
+
+        [Parameter] public EventCallback<string> DocumentLoadFailed { get; set; }
+
+        [Parameter] public EventCallback<int> PageChanged { get; set; }
+
         [Parameter] public EventCallback<int> PageCountChanged { get; set; }
+
+        [Parameter] public EventCallback<string> HyperlinkClicked { get; set; }
 
         #endregion
     }

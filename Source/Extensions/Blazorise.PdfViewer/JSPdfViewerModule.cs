@@ -50,7 +50,7 @@ namespace Blazorise.PdfViewer
             await moduleInstance.InvokeVoidAsync( "setSource", elementRef, elementId, value );
         }
 
-        public async ValueTask PrevPage( ElementReference elementRef, string elementId )
+        public async ValueTask PreviousPage( ElementReference elementRef, string elementId )
         {
             var moduleInstance = await Module;
 
