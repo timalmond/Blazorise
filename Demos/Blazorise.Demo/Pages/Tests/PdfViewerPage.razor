@@ -11,13 +11,6 @@
                 </CardText>
             </CardBody>
             <CardBody>
-                <Button Color="Color.Secondary" Clicked="@(()=>pdfViewerRef.PreviousPage())">Prev</Button>
-                <Button Color="Color.Primary" Clicked="@(()=>pdfViewerRef.NextPage())">Next</Button>
-                <Button Color="Color.Secondary" Clicked="@(()=>pdfViewerRef.ZoomIn(.25))">Zoom In</Button>
-                <Button Color="Color.Primary" Clicked="@(()=>pdfViewerRef.ZoomOut(.25))">Zoom Out</Button>
-                <Span>Page: </Span> <Span>@pageNum</Span> / <Span>@pageCount</Span>
-            </CardBody>
-            <CardBody>
                 <PdfViewer @ref="@pdfViewerRef" Source="/assets/compressed.tracemonkey-pldi-09.pdf" PageChanged="@(v => pageNum = v)" PageCountChanged="@(v => pageCount = v)" />
             </CardBody>
         </Card>

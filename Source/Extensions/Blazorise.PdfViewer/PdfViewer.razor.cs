@@ -163,6 +163,18 @@ namespace Blazorise.PdfViewer
             return DocumentLoadFailed.InvokeAsync( error );
         }
 
+        #region Toolbar
+
+        private Task OnToolbarPreviousPageClicked() => PreviousPage();
+
+        private Task OnToolbarNextPageClicked() => NextPage();
+
+        private Task OnToolbarZoomInClicked() => ZoomIn( .25d );
+
+        private Task OnToolbarZoomOutClicked() => ZoomOut( .25d );
+
+        #endregion
+
         #endregion
 
         #region Properties
@@ -212,6 +224,8 @@ namespace Blazorise.PdfViewer
         /// Defines if the content will be selectable.
         /// </summary>
         [Parameter] public bool Selectable { get; set; } = true;
+
+        [Parameter] public bool ShowToolbar { get; set; } = true;
 
         [Parameter] public EventCallback<string> DocumentLoaded { get; set; }
 
