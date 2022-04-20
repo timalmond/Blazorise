@@ -1635,6 +1635,12 @@ namespace Blazorise.Docs.Models
     decimal value = 15;
 }";
 
+        public const string NumericPickerMouseWheelExample = @"<NumericPicker @bind-Value=""@value"" ModifyValueOnWheel WheelOn=""NumericWheelOn.Hover"" />
+
+@code {
+    decimal value;
+}";
+
         public const string NumericPickerStepExample = @"<NumericPicker @bind-Value=""@value"" Step=""10"" />
 
 @code{
@@ -5619,11 +5625,11 @@ builder.Services
 
         public const string ComponentsNugetInstallExample = @"Install-Package Blazorise.Components";
 
-        public const string _0941CodeExample = @"<link href=""_content/Blazorise/blazorise.css?v=1.0.3.0"" rel=""stylesheet"" />
-<link href=""_content/Blazorise.Bootstrap/blazorise.bootstrap.css?v=1.0.3.0"" rel=""stylesheet"" />
+        public const string _0941CodeExample = @"<link href=""_content/Blazorise/blazorise.css?v=1.0.4.0"" rel=""stylesheet"" />
+<link href=""_content/Blazorise.Bootstrap/blazorise.bootstrap.css?v=1.0.4.0"" rel=""stylesheet"" />
 
-<script src=""_content/Blazorise/blazorise.js?v=1.0.3.0""></script>
-<script src=""_content/Blazorise.Bootstrap/blazorise.bootstrap.js?v=1.0.3.0""></script>";
+<script src=""_content/Blazorise/blazorise.js?v=1.0.4.0""></script>
+<script src=""_content/Blazorise.Bootstrap/blazorise.bootstrap.js?v=1.0.4.0""></script>";
 
     }
 }
