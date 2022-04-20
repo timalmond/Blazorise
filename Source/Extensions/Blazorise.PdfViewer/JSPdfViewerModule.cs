@@ -28,12 +28,11 @@ namespace Blazorise.PdfViewer
 
         public async ValueTask Initialize( DotNetObjectReference<PdfViewer> dotNetObjectRef,
             ElementReference elementRef, string elementId,
-            ElementReference textLayerElementRef, string textLayerElementId,
             object options )
         {
             var moduleInstance = await Module;
 
-            await moduleInstance.InvokeVoidAsync( "initialize", dotNetObjectRef, elementRef, elementId, textLayerElementRef, textLayerElementId, options );
+            await moduleInstance.InvokeVoidAsync( "initialize", dotNetObjectRef, elementRef, elementId, options );
         }
 
         public async ValueTask Destroy( ElementReference elementRef, string elementId )

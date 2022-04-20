@@ -19,8 +19,6 @@ namespace Blazorise.PdfViewer
 
         private DotNetObjectReference<PdfViewer> dotNetObjectRef;
 
-        private string textLayerElementId;
-
         #endregion
 
         #region Methods
@@ -55,7 +53,7 @@ namespace Blazorise.PdfViewer
             {
                 dotNetObjectRef ??= DotNetObjectReference.Create( this );
 
-                await JSModule.Initialize( dotNetObjectRef, ElementRef, ElementId, TextLayerElementRef, TextLayerElementId, new
+                await JSModule.Initialize( dotNetObjectRef, ElementRef, ElementId, new
                 {
                     Source,
                     Scale,
@@ -181,14 +179,6 @@ namespace Blazorise.PdfViewer
 
         /// <inheritdoc/>
         protected override bool ShouldAutoGenerateId => true;
-
-        private ElementReference TextLayerElementRef { get; set; }
-
-        protected string TextLayerElementId
-        {
-            get => textLayerElementId ??= IdGenerator.Generate;
-            set => textLayerElementId = value;
-        }
 
         /// <summary>
         /// Gets or sets the <see cref="JSPdfViewerModule"/> instance.

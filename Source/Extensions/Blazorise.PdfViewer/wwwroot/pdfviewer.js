@@ -8,24 +8,17 @@ import { getRequiredElement } from "../Blazorise/utilities.js?v=1.0.3.0";
 
 const _instances = [];
 
-export function initialize(dotNetObjectRef, element, elementId, textLayerElement, textLayerElementId, options) {
+export function initialize(dotNetObjectRef, element, elementId, options) {
     element = getRequiredElement(element, elementId);
 
     if (!element) {
         return;
     }
 
-    textLayerElement = getRequiredElement(textLayerElement, textLayerElementId);
-
-    const context = element.getContext("2d");
-
     const instance = {
         dotNetObjectRef: dotNetObjectRef,
         element: element,
         elementId: elementId,
-        textLayerElement: textLayerElement,
-        textLayerElementId: textLayerElementId,
-        context: context,
         pageNum: options.pageNum || 1,
         pageRendering: false,
         pageNumPending: null,
@@ -87,13 +80,25 @@ function renderPage(instance, pageNum) {
     instance.pageRendering = true;
 
     instance.pdf.getPage(pageNum).then(function (page) {
+        const pageElement = document.createElement('div');
+        pageElement.classList.add("b-pdf-page");
+        pageElement.style.display = "flex";
+        pageElement.style.alignSelf = "center";
+        instance.element.appendChild(pageElement);
+
+        const canvas = document.createElement('canvas');
+        canvas.classList.add("b-pdf-page-canvas");
+        pageElement.appendChild(canvas);
+
+        const context = canvas.getContext("2d");
+
         var viewport = page.getViewport({ scale: instance.options.scale });
-        instance.element.height = viewport.height;
-        instance.element.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
 
         // Render PDF page into canvas context
         var renderContext = {
-            canvasContext: instance.context,
+            canvasContext: context,
             viewport: viewport
         };
 
@@ -110,18 +115,23 @@ function renderPage(instance, pageNum) {
         });
 
         if (instance.options.selectable) {
+            const textLayerElement = document.createElement('div');
+            textLayerElement.classList.add("b-pdf-page-text-layer");
+            textLayerElement.classList.add("textLayer");
+            pageElement.appendChild(textLayerElement);
+
             renderTask.then(function () {
                 return page.getTextContent();
             }).then(function (textContent) {
-                instance.textLayerElement.style.left = instance.element.offsetLeft + 'px';
-                instance.textLayerElement.style.top = instance.element.offsetTop + 'px';
-                instance.textLayerElement.style.height = instance.element.offsetHeight + 'px';
-                instance.textLayerElement.style.width = instance.element.offsetWidth + 'px';
+                textLayerElement.style.left = canvas.offsetLeft + 'px';
+                textLayerElement.style.top = canvas.offsetTop + 'px';
+                textLayerElement.style.height = canvas.offsetHeight + 'px';
+                textLayerElement.style.width = canvas.offsetWidth + 'px';
 
                 // Pass the data to the method for rendering of text over the pdf canvas.
                 pdfjsLib.renderTextLayer({
                     textContent: textContent,
-                    container: instance.textLayerElement,
+                    container: textLayerElement,
                     viewport: viewport,
                     textDivs: []
                 });

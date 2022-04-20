@@ -20,12 +20,12 @@
         }
         <Div Style="display: flex;flex-direction: row;flex: 1;overflow: auto;">
             <div style="width: calc(100% - 0px);margin-left: 0px;">
-                <div class="b-pdf-page">
-                    <canvas @ref="@ElementRef" id="@ElementId"></canvas>
+                <div class="b-pdf-page" @ref="@ElementRef" id="@ElementId" style="display: flex; flex-direction: column;">
+                    @*<canvas ></canvas>
                     @if ( Selectable )
                     {
-                        <div @ref="@TextLayerElementRef" id="@TextLayerElementId" class="textLayer"></div>
-                    }
+                    <div @ref="@TextLayerElementRef" id="@TextLayerElementId" class="textLayer"></div>
+                    }*@
                 </div>
             </div>
         </Div>
