@@ -1,6 +1,7 @@
 import "./vendors/pdf.min.js?v=1.0.3.0";
 import "./vendors/pdf.worker.min.js?v=1.0.3.0";
 document.getElementsByTagName("head")[0].insertAdjacentHTML("beforeend", "<link rel=\"stylesheet\" href=\"_content/Blazorise.PdfViewer/vendors/pdf_viewer.min.css?v=1.0.3.0\" />");
+document.getElementsByTagName("head")[0].insertAdjacentHTML("beforeend", "<link rel=\"stylesheet\" href=\"_content/Blazorise.PdfViewer/pdfviewer.css?v=1.0.3.0\" />");
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '_content/Blazorise.PdfViewer/vendors/pdf.worker.min.js';
 
@@ -20,6 +21,7 @@ export function initialize(dotNetObjectRef, element, elementId, options) {
         element: element,
         elementId: elementId,
         pageNum: options.pageNum || 1,
+        pageNums: [],
         pageRendering: false,
         pageNumPending: null,
         options: options
@@ -76,70 +78,95 @@ function loadPdf(instance, source, pageNum) {
     });
 }
 
-function renderPage(instance, pageNum) {
-    instance.pageRendering = true;
+function getOrAddPageElement(instance, pageNum) {
+    let pageElement = instance.element.querySelector('div[data-page-number="' + pageNum + '"]');
 
-    instance.pdf.getPage(pageNum).then(function (page) {
-        const pageElement = document.createElement('div');
+    if (!pageElement) {
+        pageElement = document.createElement('div');
+
+        pageElement.dataset.pageNumber = pageNum;
         pageElement.classList.add("b-pdf-page");
         pageElement.style.display = "flex";
         pageElement.style.alignSelf = "center";
         instance.element.appendChild(pageElement);
 
-        const canvas = document.createElement('canvas');
-        canvas.classList.add("b-pdf-page-canvas");
-        pageElement.appendChild(canvas);
-
-        const context = canvas.getContext("2d");
-
-        var viewport = page.getViewport({ scale: instance.options.scale });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        // Render PDF page into canvas context
-        var renderContext = {
-            canvasContext: context,
-            viewport: viewport
-        };
-
-        var renderTask = page.render(renderContext);
-
-        // Wait for rendering to finish
-        renderTask = renderTask.promise.then(function () {
-            instance.pageRendering = false;
-            if (instance.pageNumPending !== null) {
-                // New page rendering is pending
-                renderPage(instance, instance.pageNumPending);
-                instance.pageNumPending = null;
-            }
-        });
+        const canvasElement = document.createElement('canvas');
+        canvasElement.classList.add("b-pdf-page-canvas");
+        pageElement.appendChild(canvasElement);
 
         if (instance.options.selectable) {
             const textLayerElement = document.createElement('div');
             textLayerElement.classList.add("b-pdf-page-text-layer");
             textLayerElement.classList.add("textLayer");
             pageElement.appendChild(textLayerElement);
-
-            renderTask.then(function () {
-                return page.getTextContent();
-            }).then(function (textContent) {
-                textLayerElement.style.left = canvas.offsetLeft + 'px';
-                textLayerElement.style.top = canvas.offsetTop + 'px';
-                textLayerElement.style.height = canvas.offsetHeight + 'px';
-                textLayerElement.style.width = canvas.offsetWidth + 'px';
-
-                // Pass the data to the method for rendering of text over the pdf canvas.
-                pdfjsLib.renderTextLayer({
-                    textContent: textContent,
-                    container: textLayerElement,
-                    viewport: viewport,
-                    textDivs: []
-                });
-            });
         }
+    }
 
-        if (instance.dotNetObjectRef) {
-            instance.dotNetObjectRef.invokeMethodAsync('NotifyPage', pageNum);
+    return pageElement;
+}
+
+function renderPage(instance, pageNum) {
+    instance.pageRendering = true;
+
+    instance.pdf.getPage(pageNum).then(function (page) {
+        const pageElement = getOrAddPageElement(instance, pageNum);
+        const canvasElement = pageElement.querySelector('canvas.b-pdf-page-canvas');
+
+        if (canvasElement) {
+            const canvasContext = canvasElement.getContext("2d");
+
+            const viewport = page.getViewport({ scale: instance.options.scale });
+            canvasElement.height = viewport.height;
+            canvasElement.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: canvasContext,
+                viewport: viewport
+            };
+
+            let renderTask = page.render(renderContext);
+
+            renderTask = renderTask.promise.then(function () {
+                instance.pageRendering = false;
+                if (instance.pageNumPending !== null) {
+                    renderPage(instance, instance.pageNumPending);
+                    instance.pageNumPending = null;
+                }
+            });
+
+            if (instance.options.selectable) {
+                const textLayerElement = pageElement.querySelector('div.b-pdf-page-text-layer');
+
+                if (textLayerElement) {
+                    renderTask.then(function () {
+                        return page.getTextContent();
+                    }).then(function (textContent) {
+                        textLayerElement.style.left = canvasElement.offsetLeft + 'px';
+                        textLayerElement.style.top = canvasElement.offsetTop + 'px';
+                        textLayerElement.style.height = canvasElement.offsetHeight + 'px';
+                        textLayerElement.style.width = canvasElement.offsetWidth + 'px';
+
+                        // Pass the data to the method for rendering of text over the pdf canvas.
+                        pdfjsLib.renderTextLayer({
+                            textContent: textContent,
+                            container: textLayerElement,
+                            viewport: viewport,
+                            textDivs: []
+                        });
+                    });
+                }
+            }
+
+            instance.pageNums.push(pageNum);
+
+            if (instance.dotNetObjectRef) {
+                instance.dotNetObjectRef.invokeMethodAsync('NotifyPage', pageNum);
+            }
+
+            let nextPageNum = pageNum + 1;
+            if (nextPageNum <= instance.numPages) {
+                queueRenderPage(instance, nextPageNum);
+            }
         }
     });
 }
@@ -199,7 +226,8 @@ export function zoomIn(element, elementId, scale) {
 
     if (instance) {
         instance.options.scale += scale;
-        queueRenderPage(instance, instance.pageNum);
+
+        instance.pageNums.forEach(pageNum => queueRenderPage(instance, pageNum));
     }
 }
 
@@ -214,6 +242,6 @@ export function zoomOut(element, elementId, scale) {
 
     if (instance) {
         instance.options.scale -= scale;
-        queueRenderPage(instance, instance.pageNum);
+        instance.pageNums.forEach(pageNum => queueRenderPage(instance, pageNum));
     }
 }
